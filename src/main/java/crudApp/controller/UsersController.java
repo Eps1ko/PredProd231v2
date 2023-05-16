@@ -1,23 +1,57 @@
 package crudApp.controller;
 
+import crudApp.model.User;
+import crudApp.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-public class HelloController {
+public class UsersController {
+	private final UserService userService;
+
+	@Autowired
+	public UsersController(UserService userService) {
+		this.userService = userService;
+	}
 
 	@GetMapping(value = "/")
-	public String printWelcome(ModelMap model) {
-		List<String> messages = new ArrayList<>();
-		messages.add("Hello!");
-		messages.add("I'm Spring MVC application");
-		messages.add("5.2.0 version by sep'19 ");
-		model.addAttribute("messages", messages);
-		return "index";
+	public String showAll(Model model) {
+		List<User> users = userService.getAllUsers();
+		model.addAttribute("users", userService.getAllUsers());
+		return "users";
 	}
-	
+
+	@GetMapping("/new")
+	public String newUser(@ModelAttribute("newUser") User user) {
+		return "newUser";
+	}
+
+	@PostMapping("/addUser")
+	public String addUser(@ModelAttribute User user) {
+		userService.addUser(user);
+		return "redirect:/";
+	}
+
+	@GetMapping("/update/{id}")
+	public String update(Model model, @PathVariable("id") Long id) {
+		model.addAttribute("userToUpdate", userService.getUser(id));
+		return "updateUser";
+	}
+	@PatchMapping("/updateUser")
+	public String updateUser(User user) {
+		userService.updateUser(user);
+		return "redirect:/";
+	}
+
+	@DeleteMapping("/deleteUser/{id}")
+	public String delete(@PathVariable("id") Long id) {
+		userService.removeUser(id);
+		return "redirect:/";
+	}
 }
